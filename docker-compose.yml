@@ -1,0 +1,64 @@
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
+    container_name: elasticsearch
+    # ports:
+    #   - "9200:9200"
+    #   - "9300:9300"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    mem_limit: 2g
+    memswap_limit: 2g
+
+  fluentd:
+    build: ./fluent/
+    container_name: fluentd
+    # ports:
+    #   - "9880:9880"
+    volumes:
+      - ./fluent/fluent.conf:/fluentd/etc/fluent.conf
+    depends_on:
+      - elasticsearch
+
+  minio:
+    image: minio/minio
+    container_name: minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=admin123
+      - MINIO_AUDIT_WEBHOOK_ENABLE_efk=on
+      - MINIO_AUDIT_WEBHOOK_ENDPOINT_efk=http://fluentd:9880/minio.audit
+    command: server /data --console-address ":9001"
+    depends_on:
+      - fluentd
+
+  grafana:
+    image: grafana/grafana:11.5.2
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - elasticsearch
+
+volumes:
+  es_data:
+  grafana_data:
+  minio_data:
