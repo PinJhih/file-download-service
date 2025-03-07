@@ -24,7 +24,7 @@
     {
       "datasource": {
         "type": "elasticsearch",
-        "uid": "eeewhrh3bfocgd"
+        "uid": "lab447es"
       },
       "fieldConfig": {
         "defaults": {
@@ -117,7 +117,7 @@
           ],
           "datasource": {
             "type": "elasticsearch",
-            "uid": "eeewhrh3bfocgd"
+            "uid": "lab447es"
           },
           "metrics": [
             {
@@ -136,7 +136,7 @@
     {
       "datasource": {
         "type": "elasticsearch",
-        "uid": "eeewhrh3bfocgd"
+        "uid": "lab447es"
       },
       "fieldConfig": {
         "defaults": {
@@ -205,7 +205,7 @@
           ],
           "datasource": {
             "type": "elasticsearch",
-            "uid": "eeewhrh3bfocgd"
+            "uid": "lab447es"
           },
           "metrics": [
             {
