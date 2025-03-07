@@ -1,5 +1,8 @@
 # File Download Service
 
+使用 MinIO 儲存和分享檔案，配合 Elasticsearch、Grafana 統計下載次數
+![](images/containers.png)
+
 - 上傳、下載檔案
 - 產生有時限的下載連結
 - 統計每個檔案的下載次數
@@ -12,8 +15,6 @@
   - 修改 docker-compose.yml 可改用其他 port
 
 ## 部署
-
-Clone 整個 repo
 
 ```bash
 git clone https://github.com/PinJhih/file-download-service.git && \
@@ -93,3 +94,20 @@ Bucket 名稱可以任意命名 (這邊我命名為 demo)
 
 點 refresh 重新整理
 ![](images/grafana/refresh.png)
+
+## 系統架構
+
+包含四個 container
+- MinIO: 提供穩定、高效且可擴展的物件存儲、檔案分享功能
+- Fluentd: 收集 MinIO 的 audit log，過濾、轉換格式後傳送給 Elasticsearch
+- Elasticsearch: 儲存 log，並提供查詢、分析的功能
+- Grafana: 將 Elasticsearch 中的資料視覺化，並顯示每個檔案的下載次數
+
+### 設定檔
+
+- Fluentd 和 Grafana 需要掛載自定義的設定檔
+- 放在 fluent/ 和 grafana/，會在 compose 啟動的時候掛載到對應的容器
+
+### Volumes
+
+- Grafana、MinIO、Elasticsearch 儲存的資料會放在 docker 的 named volume 中
