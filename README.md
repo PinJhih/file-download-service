@@ -48,7 +48,7 @@ docker compose down
 Bucket 名稱可以任意命名 (這邊我命名為 demo)
 ![](images/minio/name-bucket.png)
 
-點右側的 Object Browser，選擇剛剛建立的 bucket
+點左側的 Object Browser，選擇剛剛建立的 bucket
 ![](images/minio/browse-bucket.png)
 
 點 Upload，可以上傳檔案或整個資料夾 (也可以同時上傳多個檔案)
@@ -69,7 +69,7 @@ Bucket 名稱可以任意命名 (這邊我命名為 demo)
 - 帳號密碼可以在 docker-compose.yml 修改
   ![](images/grafana/login.png)
 
-點右上角 logo 展開選單
+點左上角 logo 展開選單
 ![](images/grafana/open-menu.png)
 
 選擇 Dashboards
@@ -85,15 +85,9 @@ Bucket 名稱可以任意命名 (這邊我命名為 demo)
 
 - 首次進入 dashboard 可能會顯示抓不到資料，原因包含
   - 尚未產生任何下載 log (無 log 資料時 Grafana 的 bug)
-  - Grafana UI 不同步
+  - Grafana UI 和資料庫不同步
 - 可以先用前面 MinIO 產生的連結下載一次檔案，產生一筆 log
-- 再手動進入每個 panel 中更新顯示資料
-
-點每個 panel 右上的選單，選 edit
-![](images/grafana/edit-panel.png)
-
-點 refresh 重新整理
-![](images/grafana/refresh.png)
+- 點右上角 refresh
 
 ## 系統架構
 
