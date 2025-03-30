@@ -1,6 +1,9 @@
 from flask import Flask
 
+from url_generator.minio_client import MinIOClient
+
 app = Flask(__name__)
+minio_client = MinIOClient()
 
 
 @app.route("/", methods=["GET"])
