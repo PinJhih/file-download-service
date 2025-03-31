@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template
 
 from url_generator.minio_client import MinIOClient
 from url_generator.shorten_proxy import generate_shorten_url
@@ -9,7 +9,12 @@ minio_client = MinIOClient()
 
 @app.route("/", methods=["GET"])
 def index():
-    return "File Download Service"
+    return render_template("index.html")
+
+
+@app.route("/generator/<string:file_name>", methods=["GET"])
+def generator(file_name):
+    return render_template("generator.html")
 
 
 @app.route("/files", methods=["GET"])
