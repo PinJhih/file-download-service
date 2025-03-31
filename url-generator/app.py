@@ -1,6 +1,7 @@
 from flask import Flask, jsonify
 
 from url_generator.minio_client import MinIOClient
+from url_generator.shorten_proxy import generate_shorten_url
 
 app = Flask(__name__)
 minio_client = MinIOClient()
@@ -23,9 +24,11 @@ def get_files():
 
 @app.route("/url/<string:file_name>/<int:expiry>", methods=["GET"])
 def generate_url(file_name, expiry):
-    url = minio_client.generate_download_url(file_name, expiry)
-    if url:
-        return jsonify({"file_name": file_name, "url": url})
+    minio_url = minio_client.generate_download_url(file_name, expiry)
+    shorten_url = generate_shorten_url(file_name, minio_url, expiry)
+
+    if minio_url:
+        return jsonify({"file_name": file_name, "url": shorten_url})
     else:
         return jsonify({"error": "Failed to generate presigned URL"}), 500
 
