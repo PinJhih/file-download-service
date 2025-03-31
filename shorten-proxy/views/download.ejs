@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>File Download Service</title>
+  <link href="/public/styles/main.css" rel="stylesheet" />
+</head>
+
+<body>
+  <main>
+    <h1>Download Succeed!</h1>
+    <a id="downloadLink" href="<%= downloadLink %>" download="<%= fileName %>" target="_blank">
+      Click here if the download not started.</a>
+  </main>
+
+  <script>
+    window.onload = function () {
+      var link = document.getElementById("downloadLink");
+      setTimeout(function () {
+        link.click();
+      }, 3000);
+    }
+  </script>
+</body>
+
+</html>
