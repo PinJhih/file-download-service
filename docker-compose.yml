@@ -53,8 +53,11 @@ services:
     build: ./shorten-proxy/
     container_name: shorten
     ports:
-      - "9000:9000"
+      - "9003:9000"
     command: npm run start
+    environment:
+      # Change to a public domain name or IP address
+      - BASE_URL=http://localhost:9003
     depends_on:
       - minio
   url-gen:
@@ -63,6 +66,10 @@ services:
     ports:
       - "9002:9002"
     command: python3 app.py
+    environment:
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=admin
+      - MINIO_SECRET_KEY=admin123
     depends_on:
       - shorten-proxy
 volumes:

@@ -1,25 +1,83 @@
 # File Download Service
 
-使用 MinIO 儲存和分享檔案，配合 Elasticsearch、Grafana 統計下載次數
-![](images/containers.png)
+使用 MinIO 儲存和分享檔案，搭配 Elasticsearch、Grafana 統計下載次數
+
+- URL Generator 管理和產生下載連結
+- Shorten Proxy 轉換短網址和 MinIO 實際網址
+
+![](doc/images/architecture.png)
 
 - 上傳、下載檔案
-- 產生有時限的下載連結
+- 產生有時限、且長度短的下載連結
 - 統計每個檔案的下載次數
 
 ## 系統需求
 
 - 安裝 Docker、Docker Compose
 - 至少 4GB 可用的記憶體
-- Port 3000, 9000, 9001 可用
+- Port 3000, 9000, 9001, 9002 可用
   - 修改 docker-compose.yml 可改用其他 port
 
 ## 部署
 
 ```bash
 git clone https://github.com/PinJhih/file-download-service.git && \
-  cd file-download-service && \
-  docker compose up -d
+  cd file-download-service
+```
+
+### 進行必要設定
+
+- 打開 docker-compose.yml，對以下容器的環境變數做必要的設定
+- **MinIO**: 預設帳號/密碼較簡單，建議改成更複雜的組合
+  ```yaml
+  minio:
+  image: minio/minio
+  container_name: minio
+  ports:
+    - "9000:9000"
+    - "9001:9001"
+  volumes:
+    - minio_data:/data
+  environment:
+    # 修改這兩行以設定管理員的帳號/密碼
+    - MINIO_ROOT_USER=admin
+    - MINIO_ROOT_PASSWORD=admin123
+    ...
+  ```
+- **short-proxy**: 使用者透過這個服務下載檔案，請將 BASE_URL 修改成要公開給使用者的 domain name
+  ```yaml
+  shorten-proxy:
+    build: ./shorten-proxy/
+    container_name: shorten
+    ports:
+      - "9003:9000"
+    command: npm run start
+    environment:
+      # 將這個 URL 修改成公開給使用者的 domain name 或 IP (若有設定 https 請加上 https)
+      - BASE_URL=http://<YOUR DOMAIN NAME>
+  ```
+- **url-generator**: 此服務會存取 MinIO Server，需要將前面設定的帳號/密碼設定在這個服務的環境變數
+  ```yaml
+  url-gen:
+  build: ./url-generator/
+  container_name: urlgen
+  ports:
+    - "9002:9002"
+  command: python3 app.py
+  environment:
+    # 請勿修改 MINIO_ENDPOINT
+    - MINIO_ENDPOINT=minio:9000
+    # 將這兩個環境變數改成上面 MinIO 的帳號/密碼
+    - MINIO_ACCESS_KEY=admin
+    - MINIO_SECRET_KEY=admin123
+  depends_on:
+    - shorten-proxy
+  ```
+
+### 啟動服務
+
+```bash
+docker compose up -d
 ```
 
 ### 關閉服務
@@ -33,32 +91,40 @@ docker compose down
   docker compose down -v
   ```
 
-## 上傳檔案並分享
+## 上傳檔案
 
 打開 http://\<server-ip\>:9001，進入 MinIO 的介面
 
 - 預設帳號: admin
 - 預設密碼: admin123
 - 帳號密碼可以在 docker-compose.yml 修改
-  ![](images/minio/login.png)
+  ![](doc/images/minio/login.png)
 
 首次使用要先建一個 bucket
-![](images/minio/create-bucket.png)
+![](doc/images/minio/create-bucket.png)
 
 Bucket 名稱可以任意命名 (這邊我命名為 demo)
-![](images/minio/name-bucket.png)
+![](doc/images/minio/name-bucket.png)
 
 點左側的 Object Browser，選擇剛剛建立的 bucket
-![](images/minio/browse-bucket.png)
+![](doc/images/minio/browse-bucket.png)
 
 點 Upload，可以上傳檔案或整個資料夾 (也可以同時上傳多個檔案)
-![](images/minio/upload.png)
+![](doc/images/minio/upload.png)
 
-點選要分享出去的檔案，按 share
-![](images/minio/share-file.png)
+<!-- 點選要分享出去的檔案，按 share
+![](doc/images/minio/share-file.png)
 
 可以設定連結過期的期限，外部使用者可透過此連結下載檔案，且不需要登入 MinIO
-![](images/minio/copy-link.png)
+![](doc/images/minio/copy-link.png) -->
+
+## 產生下載連結
+
+打開 http://<server IP\>:9002，可以看到 bucket 中的所有檔案
+![](doc/images/url-gen.png)
+
+點選要分享的檔案，設定有效期限並產生下載連結
+![](doc/images/share-file.png)
 
 ## Dashboard (下載次數統計)
 
@@ -67,19 +133,19 @@ Bucket 名稱可以任意命名 (這邊我命名為 demo)
 - 預設帳號: admin
 - 預設密碼: admin123
 - 帳號密碼可以在 docker-compose.yml 修改
-  ![](images/grafana/login.png)
+  ![](doc/images/grafana/login.png)
 
 點左上角 logo 展開選單
-![](images/grafana/open-menu.png)
+![](doc/images/grafana/open-menu.png)
 
 選擇 Dashboards
-![](images/grafana/dashboards.png)
+![](doc/images/grafana/dashboards.png)
 
 打開 Lab447
-![](images/grafana/lab-dashboard.png)
+![](doc/images/grafana/lab-dashboard.png)
 
 可以看到每個檔案的下載次數統計
-![](images/grafana/dashboard.png)
+![](doc/images/grafana/dashboard.png)
 
 ### 故障排除
 
@@ -91,11 +157,25 @@ Bucket 名稱可以任意命名 (這邊我命名為 demo)
 
 ## 系統架構
 
-包含四個 container
+包含六個 container，其中四個開源工具:
+
 - MinIO: 提供穩定、高效且可擴展的物件存儲、檔案分享功能
 - Fluentd: 收集 MinIO 的 audit log，過濾、轉換格式後傳送給 Elasticsearch
 - Elasticsearch: 儲存 log，並提供查詢、分析的功能
 - Grafana: 將 Elasticsearch 中的資料視覺化，並顯示每個檔案的下載次數
+
+兩個自己開發的服務:
+
+- Shorten-Proxy:
+  - 整合短網址和 Proxy 功能
+  - 將 MinIO presigned URL 轉換成短網址
+  - 並將短網址的流量代理到 MinIO Server
+    - 以代理的方式取代轉發
+    - 避免 MinIO Server 暴露到公網
+- URL-Generator:
+  - 管理、產生下載連結
+  - 向 MinIO Server 取得 presigned URL
+  - 再和 Shorten Proxy 註冊並取的短網址
 
 ### 設定檔
 
