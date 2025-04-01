@@ -67,9 +67,11 @@ git clone https://github.com/PinJhih/file-download-service.git && \
   environment:
     # 請勿修改 MINIO_ENDPOINT
     - MINIO_ENDPOINT=minio:9000
-    # 將這兩個環境變數改成上面 MinIO 的帳號/密碼
+    # 設定 MinIO 的帳號/密碼
     - MINIO_ACCESS_KEY=admin
     - MINIO_SECRET_KEY=admin123
+    # 設定要使用的 Bucket 名稱
+    - MINIO_BUCKET=file-download
   depends_on:
     - shorten-proxy
   ```
@@ -100,7 +102,7 @@ docker compose down
 - 帳號密碼可以在 docker-compose.yml 修改
   ![](doc/images/minio/login.png)
 
-首次使用要先建一個 bucket
+若沒有任何 bucket，要先建一個 bucket
 ![](doc/images/minio/create-bucket.png)
 
 Bucket 名稱可以任意命名 (這邊我命名為 demo)
