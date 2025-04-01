@@ -103,7 +103,6 @@ function renderTable(
 async function fetchData() {
   try {
     const response = await fetch("/files");
-
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -111,7 +110,7 @@ async function fetchData() {
     data = await response.json();
     renderTable();
   } catch (error) {
-    console.error("Error fetching data:", error);
+    alert("Error fetching data:", error);
 
     const tableBody = document.getElementById("table-body");
     tableBody.innerHTML = "";
