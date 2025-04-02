@@ -15,8 +15,11 @@
 
 - 安裝 Docker、Docker Compose
 - 至少 4GB 可用的記憶體
-- Port 3000, 9000, 9001, 9002 可用
+- Port 3000, 9000, 9001, 9002, 9003 可用
   - 修改 docker-compose.yml 可改用其他 port
+  - 其中 9003 是開放給外部使用者下載的服務，需要保證使用者可以存取
+  - 3000 為下載次數的 dashboard、9002 為下載連結產生器，應限制只有管理員可用
+  - 9000, 9001 是 MinIO 服務
 
 ## 部署
 
@@ -156,6 +159,12 @@ Bucket 名稱可以任意命名 (這邊我命名為 demo)
   - Grafana UI 和資料庫不同步
 - 可以先用前面 MinIO 產生的連結下載一次檔案，產生一筆 log
 - 點右上角 refresh
+
+## 下載提示頁面
+
+- 下載提示頁面由 EJS 模板引擎產生，模板路徑是 shorten-proxy/views/download.ejs
+  - 變更 HTML 內容可直接修改上述模板檔案
+  - 變更 CSS 請修改 shorten-proxy/public/styles/main.css
 
 ## 系統架構
 
